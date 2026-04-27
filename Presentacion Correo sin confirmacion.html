@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Correo Sin Confirmación de Cliente — Código de Comercio</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream:    #F0F4F8;
+    --warm:     #E2EAF4;
+    --terracota:#1A6FD4;
+    --gold:     #38BDF8;
+    --graphite: #0F1C2E;
+    --mid:      #4A5E78;
+    --light:    #8FA3BC;
+    --white:    #F7FAFD;
+    --accent1:  #1E3A5F;
+    --accent2:  #0EA5E9;
+    --red:      #DC2626;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html {
+    scroll-snap-type: y mandatory;
+    overflow-y: scroll;
+    scroll-behavior: smooth;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  body {
+    background: var(--cream);
+    color: var(--graphite);
+  }
+
+  /* ── SLIDE BASE ───────────────────────────────────────── */
+  .slide {
+    height: 100vh;
+    width: 100vw;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  /* ── ANIMATION SYSTEM ─────────────────────────────────── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(36px);
+    transition: opacity 0.75s cubic-bezier(0.22,1,0.36,1),
+                transform 0.75s cubic-bezier(0.22,1,0.36,1);
+  }
+  .reveal.from-left  { transform: translateX(-40px); }
+  .reveal.from-right { transform: translateX(40px); }
+  .reveal.scale-in   { transform: scale(0.92); }
+
+  .slide.in-view .reveal          { opacity: 1; transform: none; }
+  .slide.in-view .reveal:nth-child(2) { transition-delay: 0.12s; }
+  .slide.in-view .reveal:nth-child(3) { transition-delay: 0.22s; }
+  .slide.in-view .reveal:nth-child(4) { transition-delay: 0.32s; }
+  .slide.in-view .reveal:nth-child(5) { transition-delay: 0.42s; }
+  .slide.in-view .reveal:nth-child(6) { transition-delay: 0.52s; }
+  .slide.in-view .reveal:nth-child(7) { transition-delay: 0.62s; }
+
+  /* ── PROGRESS BAR ─────────────────────────────────────── */
+  #progress-bar {
+    position: fixed;
+    left: 0; top: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--terracota), var(--gold));
+    transition: width 0.4s ease;
+    z-index: 999;
+  }
+
+  /* ── SLIDE COUNTER ────────────────────────────────────── */
+  #slide-counter {
+    position: fixed;
+    bottom: 28px;
+    right: 36px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--light);
+    letter-spacing: 0.1em;
+    z-index: 999;
+  }
+
+  /* ── SCROLL HINT ──────────────────────────────────────── */
+  .scroll-hint {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    opacity: 0;
+    animation: fadeHint 1s ease 2s forwards;
+  }
+  .scroll-hint span {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--light);
+  }
+  .scroll-line {
+    width: 1px;
+    height: 36px;
+    background: linear-gradient(to bottom, var(--terracota), transparent);
+    animation: scrollLine 1.5s ease-in-out 2s infinite;
+  }
+  @keyframes fadeHint { to { opacity: 1; } }
+  @keyframes scrollLine {
+    0%   { transform: scaleY(1); transform-origin: top; }
+    50%  { transform: scaleY(0); transform-origin: top; }
+    51%  { transform: scaleY(0); transform-origin: bottom; }
+    100% { transform: scaleY(1); transform-origin: bottom; }
+  }
+
+  /* ── DECORATIVE RULE ──────────────────────────────────── */
+  .rule {
+    width: 56px;
+    height: 2px;
+    background: var(--terracota);
+    margin: 16px 0;
+  }
+  .rule.gold { background: var(--gold); }
+  .rule.center { margin: 16px auto; }
+
+  /* ══════════════════════════════════════════════════════ */
+  /*  SLIDE 1 — PORTADA                                    */
+  /* ══════════════════════════════════════════════════════ */
+  #s1 {
+    background: var(--graphite);
+    flex-direction: column;
+  }
+  #s1::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 80% 20%, rgba(26,111,212,0.28) 0%, transparent 65%),
+      radial-gradient(ellipse 40% 60% at 10% 90%, rgba(56,189,248,0.18) 0%, transparent 65%);
+  }
+  .s1-noise {
+    position: absolute; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .s1-inner {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 0 40px;
+    max-width: 820px;
+  }
+  .s1-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--terracota);
+    font-family: 'DM Mono', monospace;
+  }
+  .s1-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(36px, 6vw, 68px);
+    color: var(--cream);
+    line-height: 1.1;
+    margin: 20px 0 8px;
+  }
+  .s1-title em {
+    font-style: italic;
+    color: var(--terracota);
+  }
+  .s1-sub {
+    font-size: 15px;
+    color: rgba(245,240,232,0.55);
+    letter-spacing: 0.04em;
+    margin-top: 8px;
+  }
+  .s1-meta {
+    margin-top: 44px;
+    display: flex;
+    justify-content: center;
+    gap: 48px;
+    flex-wrap: wrap;
+  }
+  .s1-meta-item {
+    text-align: center;
+  }
+  .s1-meta-label {
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--light);
+    font-family: 'DM Mono', monospace;
+    display: block;
+    margin-bottom: 5px;
+  }
+  .s1-meta-value {
+    font-size: 13px;
+    color: rgba(245,240,232,0.8);
+    font-weight: 400;
+  }
+  .s1-deco-line {
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 1px;
+    height: 80px;
+    background: linear-gradient(to bottom, transparent, var(--gold));
+  }
+
+  /* ══════════════════════════════════════════════════════ */
+  /*  SLIDE 2 — DESCRIPCIÓN DEL CASO                       */
+  /* ══════════════════════════════════════════════════════ */
+  #s2 {
+    background: var(--white);
+    align-items: stretch;
+  }
+  .s2-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+    height: 100%;
+  }
+  .s2-left {
+    background: var(--warm);
+    padding: 72px 56px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .s2-left::after {
+    content: '';
+    position: absolute;
+    right: -60px; top: 50%;
+    transform: translateY(-50%);
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    border: 1px solid var(--terracota);
+    opacity: 0.25;
+  }
+  .s2-right {
+    padding: 72px 56px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 24px;
+  }
+  .slide-label {
+    font-size: 10px;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--terracota);
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 8px;
+  }
+  .slide-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(26px, 3.5vw, 42px);
+    line-height: 1.15;
+    color: var(--graphite);
+  }
+  .body-text {
+    font-size: 15px;
+    line-height: 1.75;
+    color: var(--mid);
+  }
+  .highlight-box {
+    background: var(--graphite);
+    color: var(--cream);
+    padding: 20px 24px;
+    border-left: 3px solid var(--terracota);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .highlight-box strong { color: var(--gold); }
+  .tag {
+    display: inline-block;
+    padding: 4px 12px;
+    background: rgba(26,111,212,0.12);
+    border: 1px solid rgba(26,111,212,0.35);
+    border-radius: 2px;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--terracota);
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* ══════════════════════════════════════════════════════ */
+  /*  SLIDE 3 — ANÁLISIS JURÍDICO                          */
+  /* ══════════════════════════════════════════════════════ */
+  #s3 {
+    background: var(--cream);
+    flex-direction: column;
+    padding: 60px 80px;
+  }
+  .s3-header { text-align: center; margin-bottom: 48px; }
+  .articles-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    width: 100%;
+    max-width: 1100px;
+  }
+  .article-card {
+    background: var(--white);
+    padding: 32px 28px;
+    border-top: 3px solid var(--terracota);
+    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .article-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(44,44,44,0.12);
+  }
+  .article-card:nth-child(2) { border-top-color: var(--gold); }
+  .article-card:nth-child(3) { border-top-color: var(--accent2); }
+  .art-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 48px;
+    color: rgba(44,44,44,0.06);
+    line-height: 1;
+    position: absolute;
+    top: 20px; right: 20px;
+    font-weight: 700;
+  }
+  .art-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--terracota);
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 10px;
+    display: block;
+  }
+  .article-card:nth-child(2) .art-label { color: var(--gold); }
+  .article-card:nth-child(3) .art-label { color: var(--accent2); }
+  .art-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--graphite);
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+  .art-body {
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: var(--mid);
+  }
+  .art-apply {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(44,44,44,0.08);
+    font-size: 12px;
+    color: var(--graphite);
+    line-height: 1.6;
+  }
+  .art-apply strong { color: var(--terracota); }
+
+  /* ══════════════════════════════════════════════════════ */
+  /*  SLIDE 4 — ARGUMENTO LEGAL                            */
+  /* ══════════════════════════════════════════════════════ */
+  #s4 {
+    background: var(--graphite);
+    flex-direction: column;
+    padding: 60px 80px;
+  }
+  #s4 .slide-label { color: var(--gold); }
+  #s4 .slide-title { color: var(--cream); margin-bottom: 40px; text-align: center; }
+  .legal-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    width: 100%;
+    max-width: 1000px;
+    background: rgba(255,255,255,0.06);
+  }
+  .legal-cell {
+    padding: 36px 30px;
+    background: var(--graphite);
+    position: relative;
+    overflow: hidden;
+  }
+  .legal-cell::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .legal-cell.valid::before   { background: #38BDF8; }
+  .legal-cell.evidence::before { background: #60A5FA; }
+  .legal-cell.risk::before    { background: var(--red); }
+  .legal-icon {
+    font-size: 28px;
+    margin-bottom: 16px;
+    display: block;
+  }
+  .legal-cell-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    color: var(--cream);
+    margin-bottom: 12px;
+  }
+  .legal-cell-body {
+    font-size: 13.5px;
+    color: rgba(245,240,232,0.6);
+    line-height: 1.7;
+  }
+  .verdict {
+    margin-top: 32px;
+    padding: 20px 32px;
+    background: rgba(26,111,212,0.15);
+    border: 1px solid rgba(56,189,248,0.35);
+    font-size: 14px;
+    color: var(--cream);
+    line-height: 1.6;
+    text-align: center;
+    max-width: 800px;
+  }
+  .verdict strong { color: var(--gold); }
+
+  /* ══════════════════════════════════════════════════════ */
+  /*  SLIDE 5 — EJEMPLO PRÁCTICO                           */
+  /* ══════════════════════════════════════════════════════ */
+  #s5 {
+    background: var(--white);
+    align-items: stretch;
+  }
+  .s5-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    width: 100%;
+    height: 100%;
+  }
+  .s5-left {
+    background: var(--warm);
+    padding: 64px 52px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .s5-right {
+    padding: 64px 52px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 16px;
+  }
+  .email-mock {
+    background: #F9F6F0;
+    border: 1px solid rgba(44,44,44,0.12);
+    border-radius: 4px;
+    overflow: hidden;
+    font-family: 'DM Mono', monospace;
+    font-size: 12.5px;
+  }
+  .email-header {
+    background: var(--warm);
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(44,44,44,0.1);
+  }
+  .email-row { display: flex; gap: 8px; margin-bottom: 4px; }
+  .email-field { color: var(--light); min-width: 40px; }
+  .email-value { color: var(--graphite); }
+  .email-body {
+    padding: 16px 18px;
+    line-height: 1.65;
+    color: var(--mid);
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .email-body .em { color: var(--terracota); font-weight: 500; }
+  .timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .tl-item {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .tl-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--terracota);
+    flex-shrink: 0;
+    margin-top: 5px;
+    position: relative;
+  }
+  .tl-dot::after {
+    content: '';
+    position: absolute;
+    top: 10px; left: 4px;
+    width: 1px; height: 32px;
+    background: rgba(26,111,212,0.25);
+  }
+  .tl-item:last-child .tl-dot::after { display: none; }
+  .tl-content { padding-bottom: 24px; }
+  .tl-time {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--light);
+    letter-spacing: 0.1em;
+    margin-bottom: 3px;
+  }
+  .tl-text { font-size: 13.5px; color: var(--mid); line-height: 1.6; }
+
+  /* ══════════════════════════════════════════════════════ */
+  /*  SLIDE 6 — PROPUESTA DE SOLUCIÓN                      */
+  /* ══════════════════════════════════════════════════════ */
+  #s6 {
+    background: var(--cream);
+    flex-direction: column;
+    padding: 56px 80px;
+  }
+  #s6 .s3-header { margin-bottom: 40px; }
+  .solution-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: 100%;
+    max-width: 1000px;
+  }
+  .sol-card {
+    padding: 30px 28px;
+    border: 1px solid rgba(44,44,44,0.1);
+    background: var(--white);
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    transition: box-shadow 0.3s;
+  }
+  .sol-card:hover { box-shadow: 0 8px 30px rgba(44,44,44,0.08); }
+  .sol-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    color: var(--terracota);
+    opacity: 0.35;
+    line-height: 1;
+    flex-shrink: 0;
+    font-weight: 700;
+  }
+  .sol-content {}
+  .sol-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    color: var(--graphite);
+    margin-bottom: 8px;
+  }
+  .sol-body { font-size: 13px; color: var(--mid); line-height: 1.65; }
+  .art-ref {
+    display: inline-block;
+    margin-top: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+    border-bottom: 1px solid var(--gold);
+    padding-bottom: 1px;
+  }
+
+  /* ══════════════════════════════════════════════════════ */
+  /*  SLIDE 7 — COMPARATIVO                                */
+  /* ══════════════════════════════════════════════════════ */
+  #s7 {
+    background: var(--graphite);
+    flex-direction: column;
+    padding: 60px 80px;
+  }
+  #s7 .slide-label { color: var(--gold); }
+  #s7 .slide-title { color: var(--cream); margin-bottom: 40px; text-align: center; }
+  .compare-table {
+    width: 100%;
+    max-width: 880px;
+    border-collapse: collapse;
+  }
+  .compare-table th {
+    padding: 14px 24px;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-family: 'DM Mono', monospace;
+    font-weight: 400;
+  }
+  .compare-table th:nth-child(1) { text-align: left; color: var(--light); }
+  .compare-table th:nth-child(2) { background: rgba(220,38,38,0.18); color: #F87171; }
+  .compare-table th:nth-child(3) { background: rgba(56,189,248,0.18); color: #7DD3FC; }
+  .compare-table td {
+    padding: 14px 24px;
+    font-size: 13.5px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    vertical-align: top;
+  }
+  .compare-table td:nth-child(1) { color: rgba(240,244,248,0.55); font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.06em; }
+  .compare-table td:nth-child(2) { background: rgba(220,38,38,0.07); color: rgba(240,244,248,0.7); }
+  .compare-table td:nth-child(3) { background: rgba(56,189,248,0.07); color: rgba(240,244,248,0.7); }
+  .icon-x { color: #F87171; }
+  .icon-ok { color: #7DD3FC; }
+
+  /* ══════════════════════════════════════════════════════ */
+  /*  SLIDE 8 — CONCLUSIÓN                                 */
+  /* ══════════════════════════════════════════════════════ */
+  #s8 {
+    background: var(--warm);
+    flex-direction: column;
+    padding: 60px 80px;
+  }
+  .conclusion-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.6fr;
+    gap: 64px;
+    width: 100%;
+    max-width: 1100px;
+    align-items: start;
+  }
+  .conclusion-left {}
+  .big-quote {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(58px, 8vw, 100px);
+    color: var(--terracota);
+    opacity: 0.18;
+    line-height: 0.9;
+    font-weight: 700;
+    margin-bottom: -16px;
+  }
+  .quote-text {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(16px, 2vw, 21px);
+    font-style: italic;
+    line-height: 1.5;
+    color: var(--graphite);
+    margin-bottom: 16px;
+  }
+  .quote-source {
+    font-size: 12px;
+    color: var(--terracota);
+    letter-spacing: 0.12em;
+    font-family: 'DM Mono', monospace;
+  }
+  .learnings { display: flex; flex-direction: column; gap: 16px; }
+  .learning-item {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 18px 20px;
+    background: rgba(255,255,255,0.55);
+    border-left: 3px solid var(--terracota);
+    transition: background 0.3s;
+  }
+  .learning-item:nth-child(2) { border-left-color: var(--accent2); }
+  .learning-item:nth-child(3) { border-left-color: #1A6FD4; }
+  .learning-item:hover { background: rgba(255,255,255,0.8); }
+  .l-icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+  .l-text { font-size: 13.5px; line-height: 1.65; color: var(--mid); }
+  .l-text strong { color: var(--graphite); display: block; margin-bottom: 3px; font-size: 14px; }
+
+  /* ══════════════════════════════════════════════════════ */
+  /*  SLIDE 9 — CIERRE                                     */
+  /* ══════════════════════════════════════════════════════ */
+  #s9 {
+    background: var(--graphite);
+    flex-direction: column;
+  }
+  #s9::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 50% 60% at 20% 30%, rgba(56,189,248,0.15) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 50% at 85% 75%, rgba(26,111,212,0.18) 0%, transparent 60%);
+  }
+  .s9-inner {
+    position: relative; z-index: 1;
+    text-align: center;
+    padding: 0 60px;
+    max-width: 720px;
+  }
+  .s9-num {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(80px, 12vw, 160px);
+    color: rgba(245,240,232,0.04);
+    line-height: 1;
+    font-weight: 700;
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  .s9-eyebrow {
+    font-size: 10px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 20px;
+  }
+  .s9-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 4vw, 48px);
+    color: var(--cream);
+    line-height: 1.2;
+    margin-bottom: 24px;
+  }
+  .s9-body {
+    font-size: 15px;
+    color: rgba(245,240,232,0.5);
+    line-height: 1.75;
+    margin-bottom: 40px;
+  }
+  .s9-arts {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .s9-art-pill {
+    padding: 6px 16px;
+    border: 1px solid rgba(56,189,248,0.4);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+  }
+
+  /* ── RESPONSIVE ───────────────────────────────────────── */
+  @media (max-width: 768px) {
+    .s2-grid, .s5-layout, .conclusion-layout { grid-template-columns: 1fr; }
+    .articles-grid, .legal-grid, .solution-grid { grid-template-columns: 1fr; }
+    .compare-table { font-size: 12px; }
+    #s3, #s4, #s6, #s7, #s8 { padding: 40px 24px; overflow-y: auto; }
+    .s2-left, .s2-right, .s5-left, .s5-right { padding: 40px 28px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+<div id="slide-counter">01 / 09</div>
+
+<!-- ══ SLIDE 1 — PORTADA ═══════════════════════════════ -->
+<section class="slide" id="s1">
+  <div class="s1-noise"></div>
+  <div class="s1-deco-line reveal"></div>
+  <div class="s1-inner">
+    <p class="s1-eyebrow reveal">Mercadotecnia · Código de Comercio</p>
+    <h1 class="s1-title reveal">
+      Correo <em>sin</em><br>Confirmación<br>de Cliente
+    </h1>
+    <div class="rule gold center reveal"></div>
+    <p class="s1-sub reveal">Análisis jurídico bajo los artículos 89 — 114 del Código de Comercio</p>
+    <div class="s1-meta reveal">
+      <div class="s1-meta-item">
+        <span class="s1-meta-label">Materia</span>
+        <span class="s1-meta-value">Mercadotecnia</span>
+      </div>
+      <div class="s1-meta-item">
+        <span class="s1-meta-label">Caso asignado</span>
+        <span class="s1-meta-value">Mensajes de Datos sin Acuse</span>
+      </div>
+      <div class="s1-meta-item">
+        <span class="s1-meta-label">Fecha</span>
+        <span class="s1-meta-value">Abril 2026</span>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <span>Desplazar</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ══ SLIDE 2 — DESCRIPCIÓN DEL CASO ═════════════════ -->
+<section class="slide" id="s2">
+  <div class="s2-grid">
+    <div class="s2-left">
+      <p class="slide-label reveal">02 — El Caso</p>
+      <h2 class="slide-title reveal">Descripción<br>del Caso</h2>
+      <div class="rule reveal"></div>
+      <p class="body-text reveal" style="margin-top:4px;">
+        Una empresa de comercio electrónico, <strong>ModaRápida S.A. de C.V.</strong>, envía una confirmación de compra al correo electrónico de su cliente. 
+        Sin embargo, el sistema no recibe acuse de recibo y el cliente, días después, alega que <em>nunca recibió la confirmación</em> y solicita reembolso.
+      </p>
+      <div class="tag reveal" style="margin-top:20px;">Problema legal identificado</div>
+    </div>
+    <div class="s2-right">
+      <div class="highlight-box reveal">
+        <strong>Situación central:</strong> La empresa realizó el envío de un Mensaje de Datos (correo electrónico de confirmación de pedido), pero no obtuvo ni solicitó acuse de recibo por parte del cliente. Ante la disputa, carece de prueba fehaciente de que el destinatario lo recibió.
+      </div>
+      <div class="reveal">
+        <p class="body-text" style="margin-bottom:12px;"><strong style="color:var(--graphite)">Actores involucrados:</strong></p>
+        <p class="body-text">🏢 <strong>Emisor:</strong> ModaRápida S.A. de C.V. — empresa de e-commerce</p>
+        <p class="body-text" style="margin-top:8px;">👤 <strong>Destinatario:</strong> Cliente que realizó la compra en línea</p>
+        <p class="body-text" style="margin-top:8px;">⚙️ <strong>Medio:</strong> Sistema de información automatizado (correo electrónico)</p>
+      </div>
+      <div class="reveal">
+        <p class="body-text"><strong style="color:var(--red);">Consecuencia:</strong> El acto comercial queda en un limbo jurídico — sin certeza de recepción, sin acuse y sin firma electrónica verificable del destinatario.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SLIDE 3 — ANÁLISIS JURÍDICO ════════════════════ -->
+<section class="slide" id="s3">
+  <div class="s3-header">
+    <p class="slide-label reveal" style="text-align:center;">03 — Marco Legal</p>
+    <h2 class="slide-title reveal" style="text-align:center; font-size:clamp(24px,3vw,38px);">Análisis Jurídico</h2>
+    <div class="rule center reveal"></div>
+  </div>
+  <div class="articles-grid">
+    <div class="article-card reveal">
+      <span class="art-number">91</span>
+      <span class="art-label">Art. 91 — Recepción</span>
+      <h3 class="art-title">Momento de Recepción de Mensajes de Datos</h3>
+      <p class="art-body">Establece que la recepción ocurre cuando el mensaje ingresa al sistema de información designado por el destinatario, o bien cuando el destinatario lo recupera si no hay sistema designado.</p>
+      <div class="art-apply"><strong>Aplicación al caso:</strong> ModaRápida no puede demostrar con certeza que el correo ingresó al sistema del cliente. Sin acuse de recibo, el momento de recepción queda indeterminado.</div>
+    </div>
+    <div class="article-card reveal">
+      <span class="art-number">92</span>
+      <span class="art-label">Art. 92 — Acuse de Recibo</span>
+      <h3 class="art-title">Acuse de Recibo de Mensajes de Datos</h3>
+      <p class="art-body">Regula la solicitud y los efectos del acuse de recibo. Si el emisor condiciona los efectos del mensaje a su recepción, el mensaje no se considera enviado hasta que se obtenga dicho acuse.</p>
+      <div class="art-apply"><strong>Aplicación al caso:</strong> La empresa no solicitó acuse ni condicionó los efectos de la confirmación a su recepción, lo que debilita su posición legal ante la disputa del cliente.</div>
+    </div>
+    <div class="article-card reveal">
+      <span class="art-number">89</span>
+      <span class="art-label">Art. 89 — Definiciones</span>
+      <h3 class="art-title">Mensaje de Datos y Principios Rectores</h3>
+      <p class="art-body">Define el Mensaje de Datos y establece principios de neutralidad tecnológica y equivalencia funcional: el correo electrónico tiene el mismo valor jurídico que un documento impreso, si cumple requisitos.</p>
+      <div class="art-apply"><strong>Aplicación al caso:</strong> El correo de confirmación <em>es</em> un Mensaje de Datos válido; el problema no es su naturaleza jurídica sino la ausencia de prueba de recepción.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SLIDE 4 — ARGUMENTO LEGAL ══════════════════════ -->
+<section class="slide" id="s4">
+  <p class="slide-label reveal" style="text-align:center;">04 — Validez</p>
+  <h2 class="slide-title reveal">Argumento Legal</h2>
+  <div class="legal-grid reveal">
+    <div class="legal-cell valid">
+      <span class="legal-icon">⚖️</span>
+      <h3 class="legal-cell-title">¿El acto es válido?</h3>
+      <p class="legal-cell-body">El envío del correo de confirmación <strong style="color:#7DD3FC">sí constituye un acto de comercio electrónico válido</strong> bajo el Art. 89 del Código de Comercio. El mensaje de datos tiene equivalencia funcional con un documento impreso. Sin embargo, su validez frente al cliente es cuestionable sin prueba de recepción.</p>
+    </div>
+    <div class="legal-cell evidence">
+      <span class="legal-icon">📋</span>
+      <h3 class="legal-cell-title">¿Es prueba suficiente?</h3>
+      <p class="legal-cell-body">El registro del envío en el sistema de la empresa puede servir como prueba de que el mensaje fue generado y expedido (Art. 91 Bis). Sin embargo, <strong style="color:#93C5FD">no es prueba de recepción</strong>. El Art. 92 prevé expresamente que sin acuse de recibo, no se presume que el destinatario recibió el mensaje.</p>
+    </div>
+    <div class="legal-cell risk">
+      <span class="legal-icon">⚠️</span>
+      <h3 class="legal-cell-title">Riesgos Legales</h3>
+      <p class="legal-cell-body">
+        <span style="color:#F87171;">① Sin acuse</span> — el momento de recepción es incierto (Art. 91)<br><br>
+        <span style="color:#F87171;">② Sin firma electrónica</span> del destinatario, no hay atribución del mensaje (Art. 93)<br><br>
+        <span style="color:#F87171;">③ Posible reembolso</span> obligatorio al no poder probar entrega fehaciente
+      </p>
+    </div>
+  </div>
+  <div class="verdict reveal">
+    <strong>Veredicto:</strong> El acto comercial <em>existe jurídicamente</em>, pero la empresa se coloca en una posición de desventaja probatoria al no haber implementado ningún mecanismo de acuse de recibo ni firma electrónica, incumpliendo las buenas prácticas que el Código de Comercio establece en los artículos 91 y 92.
+  </div>
+</section>
+
+<!-- ══ SLIDE 5 — EJEMPLO PRÁCTICO ════════════════════ -->
+<section class="slide" id="s5">
+  <div class="s5-layout">
+    <div class="s5-left">
+      <p class="slide-label reveal">05 — Vida Real</p>
+      <h2 class="slide-title reveal">Ejemplo<br>Práctico</h2>
+      <div class="rule reveal"></div>
+      <p class="body-text reveal" style="margin-top:8px;">
+        Una tienda en línea de cosméticos, <strong>BeautyNow</strong>, registra la compra de un kit de maquillaje por $1,200 MXN. El sistema envía automáticamente una confirmación. El cliente lo desconoce 10 días después al no recibir el producto.
+      </p>
+      <div class="timeline reveal" style="margin-top:24px;">
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-content">
+            <p class="tl-time">Día 1 — 14:32 hrs</p>
+            <p class="tl-text">Cliente realiza el pedido. Sistema genera y envía correo automático.</p>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-content">
+            <p class="tl-time">Día 1 — 14:32:05 hrs</p>
+            <p class="tl-text">Correo sale del sistema de BeautyNow. <em>No se solicita acuse de recibo.</em></p>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot" style="background:var(--red)"></div>
+          <div class="tl-content">
+            <p class="tl-time">Día 10</p>
+            <p class="tl-text">Cliente reclama: "Nunca recibí confirmación, exijo reembolso." La tienda no puede probar recepción.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="s5-right">
+      <p class="body-text reveal"><strong style="color:var(--graphite)">El correo que el sistema envió:</strong></p>
+      <div class="email-mock reveal">
+        <div class="email-header">
+          <div class="email-row"><span class="email-field">De:</span><span class="email-value">ventas@beautynow.com.mx</span></div>
+          <div class="email-row"><span class="email-field">Para:</span><span class="email-value">cliente@gmail.com</span></div>
+          <div class="email-row"><span class="email-field">Asunto:</span><span class="email-value">Confirmación de pedido #BN-20940</span></div>
+          <div class="email-row"><span class="email-field">Fecha:</span><span class="email-value">14 abr 2026 · 14:32 CST</span></div>
+        </div>
+        <div class="email-body">
+          Hola, gracias por tu compra en BeautyNow.<br><br>
+          Tu pedido <span class="em">#BN-20940</span> ha sido registrado.<br>
+          Producto: Kit de maquillaje premium<br>
+          Total: <span class="em">$1,200.00 MXN</span><br><br>
+          Recibirás tu pedido en 3-5 días hábiles.<br><br>
+          <em style="color:var(--light)">— Este mensaje fue generado automáticamente.<br>
+          No se solicitó confirmación de lectura. —</em>
+        </div>
+      </div>
+      <div class="highlight-box reveal" style="margin-top:4px;">
+        <strong>Problema idéntico al caso base:</strong> El correo salió del sistema del emisor (Art. 91 Bis), pero sin acuse de recibo (Art. 92), BeautyNow no puede probar que el cliente lo recibió. El cliente puede desconocerlo legalmente.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SLIDE 6 — PROPUESTA DE SOLUCIÓN ═══════════════ -->
+<section class="slide" id="s6">
+  <div class="s3-header">
+    <p class="slide-label reveal" style="text-align:center;">06 — Solución</p>
+    <h2 class="slide-title reveal" style="text-align:center; font-size:clamp(22px,3vw,36px);">Propuesta de Solución según el Código de Comercio</h2>
+    <div class="rule center reveal"></div>
+  </div>
+  <div class="solution-grid">
+    <div class="sol-card reveal">
+      <span class="sol-num">01</span>
+      <div class="sol-content">
+        <h3 class="sol-title">Implementar acuse de recibo obligatorio</h3>
+        <p class="sol-body">Configurar el sistema para que el correo de confirmación requiera una respuesta activa del cliente (clic de confirmación o acuse automático de lectura) como condición para que el pedido sea procesado.</p>
+        <span class="art-ref">Art. 92 — Acuse de Recibo</span>
+      </div>
+    </div>
+    <div class="sol-card reveal">
+      <span class="sol-num">02</span>
+      <div class="sol-content">
+        <h3 class="sol-title">Firma Electrónica en la confirmación</h3>
+        <p class="sol-body">Utilizar una Firma Electrónica Avanzada o Fiable al momento de que el cliente confirme su orden, ya sea mediante clic vinculante o token OTP, para acreditar que el destinatario recibió y aceptó los términos.</p>
+        <span class="art-ref">Art. 93 &amp; 97 — Firma Electrónica</span>
+      </div>
+    </div>
+    <div class="sol-card reveal">
+      <span class="sol-num">03</span>
+      <div class="sol-content">
+        <h3 class="sol-title">Prestador de Servicios de Certificación</h3>
+        <p class="sol-body">Contratar a un PSC acreditado ante la Secretaría de Economía para que emita constancias de conservación de mensajes de datos, incluyendo Sello Digital de Tiempo que pruebe la fecha y hora exacta del envío.</p>
+        <span class="art-ref">Art. 100–104 — Prestadores de Certificación</span>
+      </div>
+    </div>
+    <div class="sol-card reveal">
+      <span class="sol-num">04</span>
+      <div class="sol-content">
+        <h3 class="sol-title">Comunicaciones electrónicas certificadas</h3>
+        <p class="sol-body">Adoptar el uso de comunicaciones electrónicas certificadas conforme a la Norma Oficial Mexicana, tal como lo señala el párrafo final del Art. 90 Bis y el Art. 91, garantizando integridad y trazabilidad del mensaje.</p>
+        <span class="art-ref">Art. 90 Bis &amp; 91 — Comunicaciones Certificadas</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SLIDE 7 — COMPARATIVO ══════════════════════════ -->
+<section class="slide" id="s7">
+  <p class="slide-label reveal" style="text-align:center;">07 — Comparativo</p>
+  <h2 class="slide-title reveal">Sin vs. Con Confirmación</h2>
+  <table class="compare-table reveal">
+    <thead>
+      <tr>
+        <th>Aspecto</th>
+        <th>❌ Sin confirmación</th>
+        <th>✅ Con confirmación</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Prueba de recepción</td>
+        <td>No existe. El cliente puede desconocer el mensaje.</td>
+        <td>Acuse de recibo genera presunción legal de recepción (Art. 92).</td>
+      </tr>
+      <tr>
+        <td>Posición ante litigio</td>
+        <td>Empresa en desventaja: carga de la prueba recae sobre ella.</td>
+        <td>Empresa protegida: el acuse es prueba admisible en juicio (Art. 89 Bis).</td>
+      </tr>
+      <tr>
+        <td>Validez del contrato</td>
+        <td>Cuestionable si el cliente niega haber consentido.</td>
+        <td>Reforzada con firma electrónica o clic vinculante (Art. 93 y 97).</td>
+      </tr>
+      <tr>
+        <td>Conservación</td>
+        <td>Sin evidencia de integridad del mensaje enviado.</td>
+        <td>PSC conserva el mensaje con Sello Digital de Tiempo (Art. 100–104).</td>
+      </tr>
+      <tr>
+        <td>Riesgo de reembolso</td>
+        <td>Alto: sin prueba de notificación, el reembolso puede proceder.</td>
+        <td>Bajo: el acuse documenta que el cliente fue informado oportunamente.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ══ SLIDE 8 — CONCLUSIÓN ═══════════════════════════ -->
+<section class="slide" id="s8">
+  <div class="conclusion-layout" style="width:100%; max-width:1100px;">
+    <div class="conclusion-left">
+      <p class="slide-label reveal">08 — Conclusión</p>
+      <h2 class="slide-title reveal">Aprendizajes<br>e Importancia</h2>
+      <div class="rule reveal"></div>
+      <div class="reveal" style="margin-top:28px;">
+        <div class="big-quote">"</div>
+        <p class="quote-text">"En el comercio electrónico, la omisión de confirmar la recepción de un mensaje no es un simple descuido técnico: es una vulnerabilidad jurídica."</p>
+        <p class="quote-source">— Reflexión sobre el Art. 92, Código de Comercio</p>
+      </div>
+    </div>
+    <div class="learnings">
+      <div class="learning-item reveal">
+        <span class="l-icon">📖</span>
+        <div class="l-text">
+          <strong>El correo electrónico es un instrumento jurídico</strong>
+          Los mensajes de datos tienen plena equivalencia con documentos físicos, pero su valor probatorio depende de cómo se gestionen: integridad, trazabilidad y acuse de recibo son esenciales.
+        </div>
+      </div>
+      <div class="learning-item reveal">
+        <span class="l-icon">🔐</span>
+        <div class="l-text">
+          <strong>La firma electrónica protege a ambas partes</strong>
+          Adoptar firmas electrónicas avanzadas en confirmaciones de compra no solo cumple la ley, sino que genera confianza en el cliente y protege a la empresa ante disputas comerciales.
+        </div>
+      </div>
+      <div class="learning-item reveal">
+        <span class="l-icon">🏛️</span>
+        <div class="l-text">
+          <strong>El Código de Comercio ya regula el e-commerce</strong>
+          México cuenta con un marco legal robusto (Arts. 89–114) que ofrece soluciones concretas; el desafío es que las empresas lo apliquen en su operación cotidiana.
+        </div>
+      </div>
+      <div class="learning-item reveal">
+        <span class="l-icon">📊</span>
+        <div class="l-text">
+          <strong>Mercadotecnia y derecho van de la mano</strong>
+          Una estrategia de comunicación con clientes debe diseñarse considerando los requisitos legales: no solo para vender, sino para proteger la relación comercial.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SLIDE 9 — CIERRE ═══════════════════════════════ -->
+<section class="slide" id="s9">
+  <div class="s9-inner">
+    <p class="s9-eyebrow reveal">Fin de la presentación</p>
+    <h2 class="s9-title reveal">Correo sin Confirmación<br><em style="font-style:italic; color:var(--terracota);">de Cliente</em></h2>
+    <div class="rule gold center reveal"></div>
+    <p class="s9-body reveal">
+      Análisis jurídico desarrollado bajo el marco del Título de Comercio Electrónico del Código de Comercio de los Estados Unidos Mexicanos. La correcta implementación de mecanismos de acuse de recibo y firma electrónica es el puente entre el comercio digital y la seguridad jurídica.
+    </p>
+    <div class="s9-arts reveal">
+      <span class="s9-art-pill">Art. 89</span>
+      <span class="s9-art-pill">Art. 89 Bis</span>
+      <span class="s9-art-pill">Art. 90</span>
+      <span class="s9-art-pill">Art. 91</span>
+      <span class="s9-art-pill">Art. 91 Bis</span>
+      <span class="s9-art-pill">Art. 92</span>
+      <span class="s9-art-pill">Art. 93</span>
+      <span class="s9-art-pill">Art. 97</span>
+      <span class="s9-art-pill">Arts. 100–104</span>
+    </div>
+  </div>
+</section>
+
+<script>
+  // ── INTERSECTION OBSERVER ──────────────────────────────
+  const slides = document.querySelectorAll('.slide');
+  const counter = document.getElementById('slide-counter');
+  const progressBar = document.getElementById('progress-bar');
+  const total = slides.length;
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+        const idx = Array.from(slides).indexOf(entry.target) + 1;
+        counter.textContent = String(idx).padStart(2,'0') + ' / ' + String(total).padStart(2,'0');
+        progressBar.style.width = (idx / total * 100) + '%';
+      }
+    });
+  }, { threshold: 0.5 });
+
+  slides.forEach(s => observer.observe(s));
+
+  // ── KEYBOARD NAVIGATION ───────────────────────────────
+  let current = 0;
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') {
+      e.preventDefault();
+      current = Math.min(current + 1, total - 1);
+      slides[current].scrollIntoView({ behavior: 'smooth' });
+    }
+    if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      current = Math.max(current - 1, 0);
+      slides[current].scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+
+  // Sync current index on scroll
+  const syncObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        current = Array.from(slides).indexOf(entry.target);
+      }
+    });
+  }, { threshold: 0.6 });
+  slides.forEach(s => syncObserver.observe(s));
+</script>
+</body>
+</html>
